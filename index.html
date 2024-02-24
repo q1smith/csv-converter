@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="IEEE MAC CSV Converter"
+    />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>IEEE MAC CSV Converter</title>
+  </head>
+  <body>
+        <input type="file" id="upload" name="upload" accept=".csv" />
+        <script type="text/javascript" src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+        <p>Upload the CSV you downloaded from <a href="https://standards-oui.ieee.org/oui/oui.csv">https://standards-oui.ieee.org/oui/oui.csv</a>.</p>
+        <script>
+            const upload = document.getElementById("upload");
+            upload.addEventListener("change", e => {
+                const uploaded = e.target.files[0];
+                function download(filename, text) {
+                    var pom = document.createElement('a');
+                    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                    pom.setAttribute('download', filename);
+
+                    if (document.createEvent) {
+                        var event = document.createEvent('MouseEvents');
+                        event.initEvent('click', true, true);
+                        pom.dispatchEvent(event);
+                    }
+                    else {
+                        pom.click();
+                    }
+                }
+                function done(results, f) {
+                    const out = results.data;
+                    for (let i = 0; i < out.length; ++i) {
+                        delete out[i]["Registry"];
+                        const as = out[i]["Assignment"];
+                        if (as) {
+                            out[i]["Assignment"] = as.slice(0, 2) + "-" + as.slice(2, 4) + "-" + as.slice(4, 6);
+                        }
+                    }
+                    const res = Papa.unparse(out);
+                    const name = "modified-" + f.name;
+                    download(name, res);
+                }
+                Papa.parse(uploaded, { header: true, complete: done })
+            });
+        </script>
+
+  </body>
+</html>
